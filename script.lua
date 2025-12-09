@@ -666,6 +666,18 @@ if KeySystem.KeyVerified then
     local TweenService = game:GetService("TweenService")
     local TextService = game:GetService("TextService")
 
+    -- Helper tween function (keeps the UI code concise)
+    local function tween(obj, props, duration)
+        if not obj or not props then return end
+        local ti = TweenInfo.new(duration or 0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        TweenService:Create(obj, ti, props):Play()
+    end
+
+    -- Stubbed sound helper so missing sound assets don't crash the script
+    local function playSound(_)
+        -- no-op; plug in executor-specific sound logic here if desired
+    end
+
     -- // --- MAIN UI SETUP ---
     local sg = Instance.new("ScreenGui"); sg.Name = "AimESP_UI"; sg.ResetOnSpawn = false; sg.ZIndexBehavior = Enum
     .ZIndexBehavior.Global
