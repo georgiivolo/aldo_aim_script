@@ -751,7 +751,14 @@ if KeySystem.KeyVerified then
 
     local PagesContainer = Instance.new("Frame", Main); PagesContainer.Name = "PagesContainer"; PagesContainer.Size =
     UDim2.new(1, -160, 1, -36); PagesContainer.Position = UDim2.new(0, 160, 0, 36)
-    PagesContainer.BackgroundTransparency = 1; Instance.new("UIPadding", PagesContainer).Padding = UDim.new(0, 15)
+    PagesContainer.BackgroundTransparency = 1
+    do
+        local padding = Instance.new("UIPadding", PagesContainer)
+        padding.PaddingTop = UDim.new(0, 15)
+        padding.PaddingBottom = UDim.new(0, 15)
+        padding.PaddingLeft = UDim.new(0, 15)
+        padding.PaddingRight = UDim.new(0, 15)
+    end
 
     local pages = {}; local tabButtons = {}; local activeTab = nil
     local function createPage(name)
