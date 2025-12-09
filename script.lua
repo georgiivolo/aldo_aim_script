@@ -768,14 +768,16 @@ if KeySystem.KeyVerified then
         page.AutomaticCanvasSize = Enum.AutomaticSize.Y; page.Visible = false; pages[name] = page
         local layout = Instance.new("UIListLayout", page); layout.Padding = UDim.new(0, 12); return page
     end
-    local function setActiveTab(tabBtn)
+    local function setActiveTab(tab)
         if activeTab then
-            tween(activeTab.Indicator, { Size = UDim2.new(0, 0, 1, 0) }); tween(activeTab,
-                { BackgroundColor3 = THEME.Surface })
+            tween(activeTab.Indicator, { Size = UDim2.new(0, 0, 1, 0) })
+            tween(activeTab.Button, { BackgroundColor3 = THEME.Surface })
             activeTab.Page.Visible = false
         end
-        tween(tabBtn.Indicator, { Size = UDim2.new(0, 3, 1, 0) }); tween(tabBtn, { BackgroundColor3 = THEME.Background })
-        tabBtn.Page.Visible = true; activeTab = tabBtn
+        tween(tab.Indicator, { Size = UDim2.new(0, 3, 1, 0) })
+        tween(tab.Button, { BackgroundColor3 = THEME.Background })
+        tab.Page.Visible = true
+        activeTab = tab
     end
     local function createTab(name, order)
         local tabBtn = Instance.new("TextButton", Sidebar); tabBtn.Name = name; tabBtn.Size = UDim2.new(1, 0, 0, 40)
@@ -784,17 +786,20 @@ if KeySystem.KeyVerified then
         tabBtn.TextSize = 14; tabBtn.TextXAlignment = Enum.TextXAlignment.Left; tabBtn.LayoutOrder = order
         local indicator = Instance.new("Frame", tabBtn); indicator.Name = "Indicator"; indicator.Size = UDim2.new(0, 0, 1,
             0)
-        indicator.BackgroundColor3 = THEME.Accent; indicator.BorderSizePixel = 0; tabBtn.Indicator = indicator; tabBtn.Page =
-        createPage(name)
+        indicator.BackgroundColor3 = THEME.Accent; indicator.BorderSizePixel = 0
+        local page = createPage(name)
+        local tabRecord = { Button = tabBtn, Indicator = indicator, Page = page }
         tabBtn.MouseEnter:Connect(function()
-            if activeTab ~= tabBtn then tween(tabBtn, { BackgroundColor3 = THEME.Muted }) end; playSound("hover")
+            if activeTab ~= tabRecord then tween(tabBtn, { BackgroundColor3 = THEME.Muted }) end; playSound("hover")
         end)
-        tabBtn.MouseLeave:Connect(function() if activeTab ~= tabBtn then tween(tabBtn, { BackgroundColor3 = THEME
-                .Surface }) end end)
+        tabBtn.MouseLeave:Connect(function()
+            if activeTab ~= tabRecord then tween(tabBtn, { BackgroundColor3 = THEME.Surface }) end
+        end)
         tabBtn.MouseButton1Click:Connect(function()
-            setActiveTab(tabBtn); playSound("click")
-        end); table.insert(tabButtons, tabBtn)
-        return tabBtn.Page
+            setActiveTab(tabRecord); playSound("click")
+        end)
+        table.insert(tabButtons, tabRecord)
+        return page
     end
 
     local pageAim = createTab("Aimbot", 1); local pageESP = createTab("ESP", 2); local pageGunMods = createTab(
