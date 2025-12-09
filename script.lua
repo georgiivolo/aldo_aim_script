@@ -1,7 +1,4 @@
--- =========================================================================
---  FINAL SCRIPT - SELF-CONTAINED WITH ALL FEATURES, FIXES, & MODERN UI
--- =========================================================================
--- [[ FIX 1: DEFINE USERNAME AT TOP ]]
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local AldoUser = getgenv().AldoUser or LocalPlayer.Name
@@ -29,16 +26,12 @@ pcall(function()
     pcall(function()
         local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
         if playerGui and playerGui:FindFirstChild("AimESP_UI") then playerGui:FindFirstChild("AimESP_UI"):Destroy() end
-        if playerGui and playerGui:FindFirstChild("KeyAuthScreenGui") then
-            playerGui:FindFirstChild("KeyAuthScreenGui")
-                :Destroy()
-        end
+        if playerGui and playerGui:FindFirstChild("KeyAuthScreenGui") then playerGui:FindFirstChild("KeyAuthScreenGui")
+                :Destroy() end
         local coreGui = game:GetService("CoreGui")
         if coreGui and coreGui:FindFirstChild("AimESP_UI") then coreGui:FindFirstChild("AimESP_UI"):Destroy() end
-        if coreGui and coreGui:FindFirstChild("KeyAuthScreenGui") then
-            coreGui:FindFirstChild("KeyAuthScreenGui")
-                :Destroy()
-        end
+        if coreGui and coreGui:FindFirstChild("KeyAuthScreenGui") then coreGui:FindFirstChild("KeyAuthScreenGui")
+                :Destroy() end
     end)
 end)
 
@@ -49,6 +42,12 @@ local KeySystem = {}
 KeySystem.KeyVerified = false
 
 local DiscordLink = "https://discord.gg/E65ED5PQqS"
+
+local Keys = {
+    "shanegray",
+    "nv1zPwz59UV3GkNOsfTX3gCzfo8Kro4rOb1uUF5hnSY",
+    "alexwicke"
+}
 
 function KeySystem:CreateUI()
     local KeyAuthScreenGui = Instance.new("ScreenGui")
@@ -126,100 +125,97 @@ function KeySystem:CreateUI()
 
     local LocalUsername = LocalPlayer and LocalPlayer.Name or "Unknown"
     SubmitButton.MouseButton1Click:Connect(function()
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-        StatusLabel.Text = "Checking..."
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+    StatusLabel.Text = "Checking..."
+    
+    -- 1. Grab inputs and Clean them
+    local enteredKey = KeyInput.Text:gsub("%s+", "")
+    local cleanUsername = AldoUser:gsub(" ", "%%20") -- Fixes spaces in names
+    
+    -- 2. Construct the URL
+    local url = "https://spoilless-lizzie-unerratic.ngrok-free.dev/api/check-key/?key=" .. enteredKey .. "&username=" .. cleanUsername
+    print("Checking URL:", url)
 
-        -- 1. Grab inputs and Clean them
-        local enteredKey = KeyInput.Text:gsub("%s+", "")
-        local cleanUsername = AldoUser:gsub(" ", "%%20") -- Fixes spaces in names
+    -- 3. Define the Request Function (Handles Ngrok Headers)
+    local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
-        -- 2. Construct the URL
-        local url = "https://spoilless-lizzie-unerratic.ngrok-free.dev/api/check-key/?key=" ..
-            enteredkey .. "&username=" .. cleanUsername
-        print("Checking URL:", url)
-
-        -- 3. Define the Request Function (Handles Ngrok Headers)
-        local httpRequest = (syn and syn.request) or (http and http.request) or http_request or
-            (fluxus and fluxus.request) or request
-
-        if not httpRequest then
-            StatusLabel.Text = "Executor not supported (No request func)"
-            warn("Your executor does not support http request function.")
-            return
-        end
-
-        -- 4. Send the Request
-        local response = httpRequest({
-            Url = url,
-            Method = "GET",
-            Headers = {
-                ["ngrok-skip-browser-warning"] = "true",
-                ["User-Agent"] = "Roblox/AldoScript"
-            }
-        })
-
-        local isValid = false
-
-        if response and response.Body then
-            print("Server Response:", response.Body)
-
-            local decodeOk, decoded = pcall(function()
-                return HttpService:JSONDecode(response.Body)
-            end)
-
-            if decodeOk and decoded then
-                -- [[ FIX: CHECKS "true" STRING AND BOOLEAN ]]
-                if tostring(decoded.valid) == "true" or tostring(decoded.success) == "true" then
-                    isValid = true
-                end
-            end
-        else
-            StatusLabel.Text = "Connection Error"
-            warn("No response body received.")
-        end
-
-        -- 5. Final Decision
-        if isValid then
-            StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
-            StatusLabel.Text = "Success! Loading..."
-            task.wait(1)
-
-            -- Mark Verified
-            KeySystem.KeyVerified = true
-
-            -- Destroy Key UI
-            if KeyAuthScreenGui then KeyAuthScreenGui:Destroy() end
-
-            -- [[ FIX: TURN ON MAIN MENU ]]
-            -- REPLACE 'MainFrame' WITH THE ACTUAL NAME OF YOUR GUI VARIABLE
-            if MainFrame then
-                MainFrame.Visible = true
-            elseif _G.MainFrame then
-                _G.MainFrame.Visible = true
-            else
-                print("MainFrame variable not found. Check what your main GUI is named!")
-            end
-        else
-            StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-            StatusLabel.Text = "Invalid Key"
-            task.wait(2)
-            StatusLabel.Text = ""
-        end
-    end)
-
-    -- Helper function for the fallback (Don't worry about this part, just copy it all)
-    function handleResponse(body)
-        -- This is just here to make the fallback code work if request() doesn't exist
-        local HttpService = game:GetService("HttpService")
-        local decodeOk, decoded = pcall(function() return HttpService:JSONDecode(body) end)
-        if decodeOk and decoded and decoded.valid == true then
-            StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80); StatusLabel.Text = "Success!"; task.wait(1); KeySystem.KeyVerified = true; KeyAuthScreenGui
-                :Destroy()
-        else
-            StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80); StatusLabel.Text = "Invalid Key"; task.wait(2); StatusLabel.Text =
-            ""
-        end
+    if not httpRequest then
+        StatusLabel.Text = "Executor not supported (No request func)"
+        warn("Your executor does not support http request function.")
+        return
     end
+
+    -- 4. Send the Request
+    local response = httpRequest({
+        Url = url,
+        Method = "GET",
+        Headers = {
+            ["ngrok-skip-browser-warning"] = "true",
+            ["User-Agent"] = "Roblox/AldoScript"
+        }
+    })
+
+    local isValid = false
+
+    if response and response.Body then
+        print("Server Response:", response.Body)
+        
+        local decodeOk, decoded = pcall(function()
+            return HttpService:JSONDecode(response.Body)
+        end)
+
+        if decodeOk and decoded then
+            -- [[ FIX: CHECKS "true" STRING AND BOOLEAN ]]
+            if tostring(decoded.valid) == "true" or tostring(decoded.success) == "true" then
+                isValid = true
+            end
+        end
+    else
+        StatusLabel.Text = "Connection Error"
+        warn("No response body received.")
+    end
+
+    -- 5. Final Decision
+    if isValid then
+        StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+        StatusLabel.Text = "Success! Loading..."
+        task.wait(1)
+
+        -- Mark Verified
+        KeySystem.KeyVerified = true
+        
+        -- Destroy Key UI
+        if KeyAuthScreenGui then KeyAuthScreenGui:Destroy() end
+        
+        -- [[ FIX: TURN ON MAIN MENU ]]
+        -- REPLACE 'MainFrame' WITH THE ACTUAL NAME OF YOUR GUI VARIABLE
+        if MainFrame then 
+            MainFrame.Visible = true 
+        elseif _G.MainFrame then
+            _G.MainFrame.Visible = true
+        else
+            print("MainFrame variable not found. Check what your main GUI is named!")
+        end
+        
+    else
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+        StatusLabel.Text = "Invalid Key"
+        task.wait(2)
+        StatusLabel.Text = ""
+    end
+end)
+
+-- Helper function for the fallback (Don't worry about this part, just copy it all)
+function handleResponse(body)
+    -- This is just here to make the fallback code work if request() doesn't exist
+    local HttpService = game:GetService("HttpService")
+    local decodeOk, decoded = pcall(function() return HttpService:JSONDecode(body) end)
+    if decodeOk and decoded and decoded.valid == true then
+        StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80); StatusLabel.Text = "Success!"; task.wait(1); KeySystem.KeyVerified = true; KeyAuthScreenGui:Destroy()
+    else
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80); StatusLabel.Text = "Invalid Key"; task.wait(2); StatusLabel.Text = ""
+    end
+end
 
     GetKeyButton.MouseButton1Click:Connect(function()
         if setclipboard then
@@ -317,7 +313,7 @@ if KeySystem.KeyVerified then
         end
         if weapon:FindFirstChild("FireRate") then
             weapon.FireRate.Value = gunModSettings.fastFire and gunModSettings.fireRate or
-                OriginalWeaponData[weapon].FireRate
+            OriginalWeaponData[weapon].FireRate
         end
         if weapon:FindFirstChild("RecoilControl") then
             weapon.RecoilControl.Value = gunModSettings.noRecoil and 0 or OriginalWeaponData[weapon].RecoilControl
@@ -367,13 +363,8 @@ if KeySystem.KeyVerified then
     local characterCache = {}
     local lastPlayerIndex = 0
 
-    _G.AimESP_Originals = {
-        Fov = Camera.FieldOfView,
-        Ambient = Lighting.Ambient,
-        Brightness = Lighting.Brightness,
-        GlobalShadows =
-            Lighting.GlobalShadows
-    }
+    _G.AimESP_Originals = { Fov = Camera.FieldOfView, Ambient = Lighting.Ambient, Brightness = Lighting.Brightness, GlobalShadows =
+    Lighting.GlobalShadows }
 
     local function isValidTarget(model)
         -- CHECK #1: The ForceField (Bubble Shield)
@@ -403,7 +394,7 @@ if KeySystem.KeyVerified then
         flyLV.VectorVelocity = Vector3.new(0, 0, 0); flyLV.RelativeTo = Enum.ActuatorRelativeTo.World
         flyAO = Instance.new("AlignOrientation", hrp); flyAO.Attachment0 = flyAttachment
         flyAO.Mode = Enum.OrientationAlignmentMode.OneAttachment; flyAO.Responsiveness = 200; flyAO.MaxTorque = math
-            .huge
+        .huge
         humanoid.PlatformStand = true
         local anim = hrp.Parent and hrp.Parent:FindFirstChild("Animate")
         if anim then pcall(function() anim.Disabled = true end) end
@@ -472,17 +463,13 @@ if KeySystem.KeyVerified then
         hrp = char:WaitForChild("HumanoidRootPart", 5); humanoid = char:WaitForChild("Humanoid", 5)
         if settings.flyEnabled then
             disableFly(); enableFly()
-        else
-            disableFly()
-        end
+        else disableFly() end
         if settings.noclipEnabled then setNoclipEnabled(true) end
-        if humanoid then
-            humanoid.Died:Connect(function()
+        if humanoid then humanoid.Died:Connect(function()
                 disableFly(); if noclipConnection then
                     noclipConnection:Disconnect(); noclipConnection = nil
                 end
-            end)
-        end
+            end) end
         setLocalPlayerViewModel(char)
     end
 
@@ -492,9 +479,8 @@ if KeySystem.KeyVerified then
 
     local function isAlive(hum) return hum and hum.Health and hum.Health > 0 end
     local fovCircle = Drawing.new("Circle"); fovCircle.Color = Color3.fromRGB(255, 64, 64); fovCircle.Thickness = 2; fovCircle.Filled = false; fovCircle.NumSides = 64; fovCircle.Radius =
-        settings.aimRadius; fovCircle.Visible = settings.fovCircle; fovCircle.Position = Vector2.new(
-        Camera.ViewportSize.X /
-        2, Camera.ViewportSize.Y / 2)
+    settings.aimRadius; fovCircle.Visible = settings.fovCircle; fovCircle.Position = Vector2.new(Camera.ViewportSize.X /
+    2, Camera.ViewportSize.Y / 2)
     _G.AimESP_FOV_CIRCLE = fovCircle
 
     pcall(function()
@@ -514,7 +500,7 @@ if KeySystem.KeyVerified then
     local function hasLineOfSight(model)
         local myChar = LocalPlayer.Character; if not (myChar and model) then return false end
         local theirTargetPart = model:FindFirstChild(settings.aimPart) or model:FindFirstChild("Head") or
-            model:FindFirstChild("HumanoidRootPart")
+        model:FindFirstChild("HumanoidRootPart")
         if not theirTargetPart then return false end
         local origin = Camera.CFrame.Position; local direction = theirTargetPart.Position - origin
         local params = RaycastParams.new(); params.FilterType = Enum.RaycastFilterType.Exclude
@@ -554,7 +540,7 @@ if KeySystem.KeyVerified then
                 local targetHrp = targetChar:FindFirstChild("HumanoidRootPart")
                 if targetHrp then
                     myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 2) -- Teleport behind them
-                    task.wait()                                           -- Allow physics to update
+                    task.wait()                                       -- Allow physics to update
 
                     if settings.killAllClick then
                         -- Simulate a mouse click to fire your weapon
@@ -652,12 +638,8 @@ if KeySystem.KeyVerified then
         end
         if input.UserInputType == settings.keybinds.aimbotKey or input.KeyCode == settings.keybinds.aimbotKey then isAimbotKeyPressed = true end
         if input.KeyCode == settings.keybinds.toggleFly then setFlyEnabled(not settings.flyEnabled) end
-        if input.KeyCode == settings.keybinds.toggleGUI then
-            if mainGuiFrame then
-                mainGuiFrame.Visible = not mainGuiFrame
-                    .Visible
-            end
-        end
+        if input.KeyCode == settings.keybinds.toggleGUI then if mainGuiFrame then mainGuiFrame.Visible = not mainGuiFrame
+                .Visible end end
         if input.KeyCode == settings.keybinds.loopKillKey then toggleLoopKill() end
         if input.KeyCode == settings.keybinds.killAllKey then killAllTask() end -- Correctly calls the one-shot function
     end)
@@ -686,14 +668,10 @@ if KeySystem.KeyVerified then
 
     -- // --- MAIN UI SETUP ---
     local sg = Instance.new("ScreenGui"); sg.Name = "AimESP_UI"; sg.ResetOnSpawn = false; sg.ZIndexBehavior = Enum
-        .ZIndexBehavior.Global
+    .ZIndexBehavior.Global
     local function safeParentGui(gui)
-        local ok, cg = pcall(function() return game:GetService("CoreGui") end); if ok and cg then
-            gui.Parent = cg
-        else
-            gui.Parent =
-                Players.LocalPlayer:WaitForChild("PlayerGui")
-        end
+        local ok, cg = pcall(function() return game:GetService("CoreGui") end); if ok and cg then gui.Parent = cg else gui.Parent =
+            Players.LocalPlayer:WaitForChild("PlayerGui") end
     end
     safeParentGui(sg)
 
@@ -719,36 +697,30 @@ if KeySystem.KeyVerified then
     local tooltipConnection -- For the mouse-follow connection
 
     local Main = Instance.new("Frame"); Main.Name = "Main"; Main.Size = UDim2.new(0, 700, 0, 480); Main.Position = UDim2
-        .new(0.5, -350, 0.5, -240)
+    .new(0.5, -350, 0.5, -240)
     Main.BackgroundColor3 = THEME.Background; Main.BorderSizePixel = 0; Main.ClipsDescendants = true; Main.Parent = sg
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8); Instance.new("UIStroke", Main).Color = THEME.Muted
     local mainGuiFrame = Main -- Link to your script's main frame variable
 
     -- // --- WINDOW MANAGEMENT ---
     local TitleBar = Instance.new("Frame", Main); TitleBar.Name = "TitleBar"; TitleBar.Size = UDim2.new(1, 0, 0, 36); TitleBar.BackgroundColor3 =
-        THEME.Surface
+    THEME.Surface
     local Title = Instance.new("TextLabel", TitleBar); Title.Size = UDim2.new(0, 200, 1, 0); Title.Position = UDim2.new(
-        0, 12, 0, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
+    0, 12, 0, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
     Title.Text = "AldoAimV4"; Title.TextColor3 = THEME.Text; Title.TextSize = 16; Title.TextXAlignment = Enum
-        .TextXAlignment.Left
+    .TextXAlignment.Left
 
     local dragging, dragStart, startPos
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging, dragStart, startPos =
-                true, input.Position, Main.Position
-        end
-    end)
+    TitleBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging, dragStart, startPos =
+            true, input.Position, Main.Position end end)
     TitleBar.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    UIS.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local d = input.Position - dragStart; Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X,
                 startPos.Y.Scale, startPos.Y.Offset + d.Y)
-        end
-    end)
+        end end)
 
     local btnClose = Instance.new("TextButton", TitleBar); btnClose.Size = UDim2.new(0, 30, 0, 24); btnClose.Position =
-        UDim2.new(1, -35, 0.5, -12); btnClose.BackgroundTransparency = 1
+    UDim2.new(1, -35, 0.5, -12); btnClose.BackgroundTransparency = 1
     btnClose.Font = Enum.Font.GothamBold; btnClose.Text = "X"; btnClose.TextColor3 = THEME.TextMuted; btnClose.TextSize = 18
     btnClose.MouseEnter:Connect(function() tween(btnClose, { TextColor3 = Color3.fromRGB(255, 80, 80) }, 0.1) end)
     btnClose.MouseLeave:Connect(function() tween(btnClose, { TextColor3 = THEME.TextMuted }, 0.1) end)
@@ -760,20 +732,20 @@ if KeySystem.KeyVerified then
 
     -- // --- LAYOUT & TABS ---
     local Sidebar = Instance.new("Frame", Main); Sidebar.Name = "Sidebar"; Sidebar.Size = UDim2.new(0, 160, 1, -36); Sidebar.Position =
-        UDim2.new(0, 0, 0, 36)
+    UDim2.new(0, 0, 0, 36)
     Sidebar.BackgroundColor3 = THEME.Surface; Sidebar.BorderSizePixel = 0
     Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 10); Instance.new("UIListLayout", Sidebar).Padding = UDim
-        .new(0, 2)
+    .new(0, 2)
 
     local PagesContainer = Instance.new("Frame", Main); PagesContainer.Name = "PagesContainer"; PagesContainer.Size =
-        UDim2.new(1, -160, 1, -36); PagesContainer.Position = UDim2.new(0, 160, 0, 36)
+    UDim2.new(1, -160, 1, -36); PagesContainer.Position = UDim2.new(0, 160, 0, 36)
     PagesContainer.BackgroundTransparency = 1; Instance.new("UIPadding", PagesContainer).Padding = UDim.new(0, 15)
 
     local pages = {}; local tabButtons = {}; local activeTab = nil
     local function createPage(name)
         local page = Instance.new("ScrollingFrame", PagesContainer); page.Name = name; page.Size = UDim2.fromScale(1, 1); page.BackgroundTransparency = 1
         page.BorderSizePixel = 0; page.ScrollBarImageColor3 = THEME.Muted; page.ScrollBarThickness = 4; page.CanvasSize =
-            UDim2.new()
+        UDim2.new()
         page.AutomaticCanvasSize = Enum.AutomaticSize.Y; page.Visible = false; pages[name] = page
         local layout = Instance.new("UIListLayout", page); layout.Padding = UDim.new(0, 12); return page
     end
@@ -789,23 +761,17 @@ if KeySystem.KeyVerified then
     local function createTab(name, order)
         local tabBtn = Instance.new("TextButton", Sidebar); tabBtn.Name = name; tabBtn.Size = UDim2.new(1, 0, 0, 40)
         tabBtn.BackgroundColor3 = THEME.Surface; tabBtn.Font = FONT; tabBtn.Text = "  " .. name; tabBtn.TextColor3 =
-            THEME.Text
+        THEME.Text
         tabBtn.TextSize = 14; tabBtn.TextXAlignment = Enum.TextXAlignment.Left; tabBtn.LayoutOrder = order
         local indicator = Instance.new("Frame", tabBtn); indicator.Name = "Indicator"; indicator.Size = UDim2.new(0, 0, 1,
             0)
         indicator.BackgroundColor3 = THEME.Accent; indicator.BorderSizePixel = 0; tabBtn.Indicator = indicator; tabBtn.Page =
-            createPage(name)
+        createPage(name)
         tabBtn.MouseEnter:Connect(function()
             if activeTab ~= tabBtn then tween(tabBtn, { BackgroundColor3 = THEME.Muted }) end; playSound("hover")
         end)
-        tabBtn.MouseLeave:Connect(function()
-            if activeTab ~= tabBtn then
-                tween(tabBtn, {
-                    BackgroundColor3 = THEME
-                        .Surface
-                })
-            end
-        end)
+        tabBtn.MouseLeave:Connect(function() if activeTab ~= tabBtn then tween(tabBtn, { BackgroundColor3 = THEME
+                .Surface }) end end)
         tabBtn.MouseButton1Click:Connect(function()
             setActiveTab(tabBtn); playSound("click")
         end); table.insert(tabButtons, tabBtn)
@@ -813,7 +779,7 @@ if KeySystem.KeyVerified then
     end
 
     local pageAim = createTab("Aimbot", 1); local pageESP = createTab("ESP", 2); local pageGunMods = createTab(
-        "Gun Mods", 3); local pageMisc = createTab("Misc", 4); local pageSettings = createTab("Settings", 5)
+    "Gun Mods", 3); local pageMisc = createTab("Misc", 4); local pageSettings = createTab("Settings", 5)
     setActiveTab(tabButtons[1])
 
     -- // --- MODERN COMPONENT FACTORY ---
@@ -840,25 +806,21 @@ if KeySystem.KeyVerified then
     end
     local function createSection(parent, text)
         local l = Instance.new("TextLabel", parent); l.Size = UDim2.new(1, 0, 0, 20); l.BackgroundTransparency = 1; l.Font =
-            Enum.Font.GothamBold; l.Text = text:upper(); l.TextColor3 = THEME.TextMuted; l.TextSize = 12; l.TextXAlignment =
-            Enum.TextXAlignment.Left
+        Enum.Font.GothamBold; l.Text = text:upper(); l.TextColor3 = THEME.TextMuted; l.TextSize = 12; l.TextXAlignment =
+        Enum.TextXAlignment.Left
     end
     local function createToggle(parent, text, getVal, setVal)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 24); f.BackgroundTransparency = 1
         local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -60, 1, 0); l.BackgroundTransparency = 1; l.Font =
-            FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
+        FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
         local t = Instance.new("TextButton", f); t.Size = UDim2.new(0, 40, 0, 20); t.Position = UDim2.new(1, -40, 0.5,
             -10); t.BackgroundColor3 = THEME.Muted; t.Text = ""; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
         local n = Instance.new("Frame", t); n.Size = UDim2.new(0, 16, 0, 16); n.Position = UDim2.new(0, 2, 0.5, -8); n.BackgroundColor3 =
-            THEME.TextMuted; Instance.new("UICorner", n).CornerRadius = UDim.new(1, 0)
+        THEME.TextMuted; Instance.new("UICorner", n).CornerRadius = UDim.new(1, 0)
         local function u(i)
-            local v = getVal(); local d = i and 0 or 0.15; if v then
-                tween(n,
-                    { Position = UDim2.new(1, -18, 0.5, -8), BackgroundColor3 = THEME.Accent }, d)
-            else
-                tween(n,
-                    { Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = THEME.TextMuted }, d)
-            end
+            local v = getVal(); local d = i and 0 or 0.15; if v then tween(n,
+                    { Position = UDim2.new(1, -18, 0.5, -8), BackgroundColor3 = THEME.Accent }, d) else tween(n,
+                    { Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = THEME.TextMuted }, d) end
         end
         t.MouseButton1Click:Connect(function()
             setVal(not getVal()); u(); playSound("click")
@@ -868,30 +830,27 @@ if KeySystem.KeyVerified then
     local function createSlider(parent, text, min, max, step, getVal, setVal)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 40); f.BackgroundTransparency = 1
         local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -60, 0, 20); l.BackgroundTransparency = 1; l.Font =
-            FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
+        FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
         local vL = Instance.new("TextLabel", f); vL.Size = UDim2.new(0, 50, 0, 20); vL.Position = UDim2.new(1, -50, 0, 0); vL.BackgroundTransparency = 1; vL.Font =
-            Enum.Font.GothamBold; vL.TextColor3 = THEME.Accent; vL.TextSize = 14; vL.TextXAlignment = Enum
-            .TextXAlignment
-            .Right
+        Enum.Font.GothamBold; vL.TextColor3 = THEME.Accent; vL.TextSize = 14; vL.TextXAlignment = Enum.TextXAlignment
+        .Right
         local t = Instance.new("Frame", f); t.Size = UDim2.new(1, 0, 0, 6); t.Position = UDim2.new(0, 0, 0, 24); t.BackgroundColor3 =
-            THEME.Muted; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
+        THEME.Muted; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
         local fl = Instance.new("Frame", t); fl.BackgroundColor3 = THEME.Accent; Instance.new("UICorner", fl).CornerRadius =
-            UDim.new(1, 0)
+        UDim.new(1, 0)
         local iB = Instance.new("TextButton", t); iB.Size = UDim2.fromScale(1, 1); iB.BackgroundTransparency = 1; iB.ZIndex = 2
         local function u()
             local v = getVal(); local p = step < 1 and "%.2f" or "%.0f"; vL.Text = string.format(p, v); local c = (v - min) /
-                (max - min); tween(fl, { Size = UDim2.new(c, 0, 1, 0) }, 0.05)
+            (max - min); tween(fl, { Size = UDim2.new(c, 0, 1, 0) }, 0.05)
         end
         local d = false
         local function o(i)
             local p = math.clamp((i.Position.X - t.AbsolutePosition.X) / t.AbsoluteSize.X, 0, 1); local v = min +
-                (max - min) * p; local s = math.floor(v / step + 0.5) * step; setVal(s); u()
+            (max - min) * p; local s = math.floor(v / step + 0.5) * step; setVal(s); u()
         end
-        iB.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        iB.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then
                 d = true; o(i); playSound("click")
-            end
-        end)
+            end end)
         UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then d = false end end)
         iB.InputChanged:Connect(function(i) if d and i.UserInputType == Enum.UserInputType.MouseMovement then o(i) end end)
         iB.MouseEnter:Connect(function() playSound("hover") end); u()
@@ -900,19 +859,19 @@ if KeySystem.KeyVerified then
     local function createChoice(parent, text, options, getVal, setVal, tooltipText)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 30); f.BackgroundTransparency = 1
         local l = Instance.new("TextLabel", f); l.Size = UDim2.new(0.5, -5, 1, 0); l.BackgroundTransparency = 1; l.Font =
-            FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
+        FONT; l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
         local cB = Instance.new("TextButton", f); cB.Size = UDim2.new(0.5, -5, 1, 0); cB.Position = UDim2.fromScale(0.5,
             0); cB.BackgroundColor3 = THEME.Muted; cB.Font = FONT; cB.TextColor3 = THEME.Text; cB.TextSize = 14; Instance.new("UICorner", cB).CornerRadius =
-            UDim.new(0, 5)
+        UDim.new(0, 5)
         local lB = Instance.new("TextButton", cB); lB.Size = UDim2.new(0, 20, 1, 0); lB.BackgroundTransparency = 1; lB.Font =
-            FONT; lB.Text = "<"; lB.TextColor3 = THEME.TextMuted; lB.TextSize = 14
+        FONT; lB.Text = "<"; lB.TextColor3 = THEME.TextMuted; lB.TextSize = 14
         local rB = lB:Clone(); rB.Parent = cB; rB.Position = UDim2.new(1, -20, 0, 0); rB.Text = ">";
         local tL = Instance.new("TextLabel", cB); tL.Size = UDim2.new(1, -40, 1, 0); tL.Position = UDim2.new(0, 20, 0, 0); tL.BackgroundTransparency = 1; tL.Font =
-            FONT; tL.TextColor3 = THEME.Text; tL.TextSize = 14
+        FONT; tL.TextColor3 = THEME.Text; tL.TextSize = 14
         local function u() tL.Text = getVal() end
         local function c(dir)
             local cur = getVal(); local i = table.find(options, cur) or 1; local nI = (i + dir - 1) % #options + 1; setVal(
-                options[nI]); u(); playSound("click")
+            options[nI]); u(); playSound("click")
         end
         lB.MouseButton1Click:Connect(function() c(-1) end); rB.MouseButton1Click:Connect(function() c(1) end); u()
         handleTooltip(f, tooltipText)
