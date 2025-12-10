@@ -41,7 +41,7 @@ local LocalPlayer = Players.LocalPlayer
 local KeySystem = {}
 KeySystem.KeyVerified = false
 
-local DiscordLink = "https://discord.gg/E65ED5PQqS"
+local ScriptKeyLink = "https://georgiivolo1.pythonanywhere.com/"
 
 function KeySystem:CreateUI()
     local KeyAuthScreenGui = Instance.new("ScreenGui")
@@ -199,7 +199,7 @@ end
 
     GetKeyButton.MouseButton1Click:Connect(function()
         if setclipboard then
-            setclipboard(DiscordLink)
+            setclipboard(ScriptKeyLink)
             StatusLabel.TextColor3 = Color3.fromRGB(80, 180, 255)
             StatusLabel.Text = "Discord Link Copied!"
             task.wait(2)
