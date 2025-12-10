@@ -127,7 +127,7 @@ function KeySystem:CreateUI()
         local cleanUsername = AldoUser:gsub(" ", "%%20") -- Fixes spaces in names
 
         -- 2. Construct the URL
-        local url = "https://spoilless-lizzie-unerratic.ngrok-free.dev/api/check-key/?key=" .. enteredKey .. "&username=" .. cleanUsername
+        local url = "https://georgiivolo1.pythonanywhere.com/api/check-key/?key=" .. enteredKey .. "&username=" .. cleanUsername
 
         -- 3. Define the Request Function (Handles Ngrok Headers)
         local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
