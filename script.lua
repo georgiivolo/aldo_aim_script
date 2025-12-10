@@ -640,24 +640,26 @@ if KeySystem.KeyVerified then
             lines = {},
             healthBarBg = Drawing.new("Square"),
             healthBar = Drawing.new("Square"),
-            infoText = Drawing.new("Text")
+            infoText = Drawing.new("Text"),
+            tracer = Drawing.new("Line")
         }
         c.box.Thickness = 2; c.box.Filled = false; c.box.Visible = false
         c.healthBarBg.Thickness = 1; c.healthBarBg.Filled = true; c.healthBarBg.Color = Color3.fromRGB(20, 20, 20); c.healthBarBg.Visible = false
         c.healthBar.Thickness = 0; c.healthBar.Filled = true; c.healthBar.Visible = false
         c.infoText.Size = 13; c.infoText.Center = true; c.infoText.Outline = true; c.infoText.Visible = false
+        c.tracer.Thickness = 2; c.tracer.Visible = false
         for _ = 1, 24 do table.insert(c.lines, newLine()) end
         MainESP.cache[model] = c
         return c
     end
     local function hideCache(model)
         local c = MainESP.cache[model]; if not c then return end
-        if c.box then c.box.Visible = false end; if c.healthBar then c.healthBar.Visible = false end; if c.healthBarBg then c.healthBarBg.Visible = false end; if c.infoText then c.infoText.Visible = false end
+        if c.box then c.box.Visible = false end; if c.healthBar then c.healthBar.Visible = false end; if c.healthBarBg then c.healthBarBg.Visible = false end; if c.infoText then c.infoText.Visible = false end; if c.tracer then c.tracer.Visible = false end
         for _, ln in ipairs(c.lines) do ln.Visible = false end
     end
     local function removeCache(model)
         local c = MainESP.cache[model]; if not c then return end
-        pcall(function() c.box:Remove() end); pcall(function() c.healthBar:Remove() end); pcall(function() c.healthBarBg:Remove() end); pcall(function() c.infoText:Remove() end)
+        pcall(function() c.box:Remove() end); pcall(function() c.healthBar:Remove() end); pcall(function() c.healthBarBg:Remove() end); pcall(function() c.infoText:Remove() end); pcall(function() c.tracer:Remove() end)
         for _, ln in ipairs(c.lines) do pcall(function() ln:Remove() end) end
         MainESP.cache[model] = nil
     end
@@ -756,6 +758,33 @@ if KeySystem.KeyVerified then
                 cache.infoText.Text = string.format("%s [%.0fm]", name, dist)
                 cache.infoText.Position = Vector2.new(minX + (maxX - minX) / 2, minY - 15)
             else cache.infoText.Visible = false end
+            if settings.espTracers and cache.tracer then
+                local tracerTarget = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Head")
+                if tracerTarget then
+                    local tPos, tOn = screenPoint(tracerTarget.Position)
+                    if tOn then
+                        local origin
+                        local vp = Camera.ViewportSize
+                        if settings.espTracerOrigin == "Top Center" then
+                            origin = Vector2.new(vp.X / 2, 0)
+                        elseif settings.espTracerOrigin == "Crosshair" then
+                            origin = Vector2.new(vp.X / 2, vp.Y / 2)
+                        else -- Bottom Center
+                            origin = Vector2.new(vp.X / 2, vp.Y)
+                        end
+                        cache.tracer.From = origin
+                        cache.tracer.To = tPos
+                        cache.tracer.Color = espColor
+                        cache.tracer.Visible = true
+                    else
+                        cache.tracer.Visible = false
+                    end
+                else
+                    cache.tracer.Visible = false
+                end
+            else
+                if cache.tracer then cache.tracer.Visible = false end
+            end
         else
             hideCache(model)
         end
