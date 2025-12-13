@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local AldoUser = getgenv().AldoUser or LocalPlayer.Name
@@ -26,12 +25,16 @@ pcall(function()
     pcall(function()
         local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
         if playerGui and playerGui:FindFirstChild("AimESP_UI") then playerGui:FindFirstChild("AimESP_UI"):Destroy() end
-        if playerGui and playerGui:FindFirstChild("KeyAuthScreenGui") then playerGui:FindFirstChild("KeyAuthScreenGui")
-                :Destroy() end
+        if playerGui and playerGui:FindFirstChild("KeyAuthScreenGui") then
+            playerGui:FindFirstChild("KeyAuthScreenGui")
+                :Destroy()
+        end
         local coreGui = game:GetService("CoreGui")
         if coreGui and coreGui:FindFirstChild("AimESP_UI") then coreGui:FindFirstChild("AimESP_UI"):Destroy() end
-        if coreGui and coreGui:FindFirstChild("KeyAuthScreenGui") then coreGui:FindFirstChild("KeyAuthScreenGui")
-                :Destroy() end
+        if coreGui and coreGui:FindFirstChild("KeyAuthScreenGui") then
+            coreGui:FindFirstChild("KeyAuthScreenGui")
+                :Destroy()
+        end
     end)
 end)
 
@@ -127,10 +130,12 @@ function KeySystem:CreateUI()
         local cleanUsername = AldoUser:gsub(" ", "%%20") -- Fixes spaces in names
 
         -- 2. Construct the URL
-        local url = "https://georgiivolo1.pythonanywhere.com/api/check-key/?key=" .. enteredKey .. "&username=" .. cleanUsername
+        local url = "https://georgiivolo1.pythonanywhere.com/api/check-key/?key=" ..
+            enteredKey .. "&username=" .. cleanUsername
 
         -- 3. Define the Request Function (Handles Ngrok Headers)
-        local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+        local httpRequest = (syn and syn.request) or (http and http.request) or http_request or
+            (fluxus and fluxus.request) or request
         local isValid = false
 
         -- 4. Send the Request (if supported)
@@ -145,7 +150,7 @@ function KeySystem:CreateUI()
                     }
                 })
             end)
-
+        -- Decode the raw JSON
             if ok and response and response.Body then
                 local decodeOk, decoded = pcall(function()
                     return HttpService:JSONDecode(response.Body)
@@ -176,7 +181,6 @@ function KeySystem:CreateUI()
             elseif _G.MainFrame then
                 _G.MainFrame.Visible = true
             end
-
         else
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
             StatusLabel.Text = "Invalid Key"
@@ -185,17 +189,19 @@ function KeySystem:CreateUI()
         end
     end)
 
--- Helper function for the fallback (Don't worry about this part, just copy it all)
-function handleResponse(body)
-    -- This is just here to make the fallback code work if request() doesn't exist
-    local HttpService = game:GetService("HttpService")
-    local decodeOk, decoded = pcall(function() return HttpService:JSONDecode(body) end)
-    if decodeOk and decoded and decoded.valid == true then
-        StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80); StatusLabel.Text = "Success!"; task.wait(1); KeySystem.KeyVerified = true; KeyAuthScreenGui:Destroy()
-    else
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80); StatusLabel.Text = "Invalid Key"; task.wait(2); StatusLabel.Text = ""
+    -- Helper function for the fallback (Don't worry about this part, just copy it all)
+    function handleResponse(body)
+        -- This is just here to make the fallback code work if request() doesn't exist
+        local HttpService = game:GetService("HttpService")
+        local decodeOk, decoded = pcall(function() return HttpService:JSONDecode(body) end)
+        if decodeOk and decoded and decoded.valid == true then
+            StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80); StatusLabel.Text = "Success!"; task.wait(1); KeySystem.KeyVerified = true; KeyAuthScreenGui
+                :Destroy()
+        else
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80); StatusLabel.Text = "Invalid Key"; task.wait(2); StatusLabel.Text =
+            ""
+        end
     end
-end
 
     GetKeyButton.MouseButton1Click:Connect(function()
         if setclipboard then
@@ -293,7 +299,7 @@ if KeySystem.KeyVerified then
         end
         if weapon:FindFirstChild("FireRate") then
             weapon.FireRate.Value = gunModSettings.fastFire and gunModSettings.fireRate or
-            OriginalWeaponData[weapon].FireRate
+                OriginalWeaponData[weapon].FireRate
         end
         if weapon:FindFirstChild("RecoilControl") then
             weapon.RecoilControl.Value = gunModSettings.noRecoil and 0 or OriginalWeaponData[weapon].RecoilControl
@@ -343,8 +349,13 @@ if KeySystem.KeyVerified then
     local characterCache = {}
     local lastPlayerIndex = 0
 
-    _G.AimESP_Originals = { Fov = Camera.FieldOfView, Ambient = Lighting.Ambient, Brightness = Lighting.Brightness, GlobalShadows =
-    Lighting.GlobalShadows }
+    _G.AimESP_Originals = {
+        Fov = Camera.FieldOfView,
+        Ambient = Lighting.Ambient,
+        Brightness = Lighting.Brightness,
+        GlobalShadows =
+            Lighting.GlobalShadows
+    }
 
     local function isEnemy(plr)
         if not plr or plr == LocalPlayer then return false end
@@ -397,7 +408,7 @@ if KeySystem.KeyVerified then
         flyLV.VectorVelocity = Vector3.new(0, 0, 0); flyLV.RelativeTo = Enum.ActuatorRelativeTo.World
         flyAO = Instance.new("AlignOrientation", hrp); flyAO.Attachment0 = flyAttachment
         flyAO.Mode = Enum.OrientationAlignmentMode.OneAttachment; flyAO.Responsiveness = 200; flyAO.MaxTorque = math
-        .huge
+            .huge
         humanoid.PlatformStand = true
         local anim = hrp.Parent and hrp.Parent:FindFirstChild("Animate")
         if anim then pcall(function() anim.Disabled = true end) end
@@ -466,13 +477,17 @@ if KeySystem.KeyVerified then
         hrp = char:WaitForChild("HumanoidRootPart", 5); humanoid = char:WaitForChild("Humanoid", 5)
         if settings.flyEnabled then
             disableFly(); enableFly()
-        else disableFly() end
+        else
+            disableFly()
+        end
         if settings.noclipEnabled then setNoclipEnabled(true) end
-        if humanoid then humanoid.Died:Connect(function()
+        if humanoid then
+            humanoid.Died:Connect(function()
                 disableFly(); if noclipConnection then
                     noclipConnection:Disconnect(); noclipConnection = nil
                 end
-            end) end
+            end)
+        end
         setLocalPlayerViewModel(char)
     end
 
@@ -482,8 +497,9 @@ if KeySystem.KeyVerified then
 
     local function isAlive(hum) return hum and hum.Health and hum.Health > 0 end
     local fovCircle = Drawing.new("Circle"); fovCircle.Color = Color3.fromRGB(255, 64, 64); fovCircle.Thickness = 2; fovCircle.Filled = false; fovCircle.NumSides = 64; fovCircle.Radius =
-    settings.aimRadius; fovCircle.Visible = settings.fovCircle; fovCircle.Position = Vector2.new(Camera.ViewportSize.X /
-    2, Camera.ViewportSize.Y / 2)
+        settings.aimRadius; fovCircle.Visible = settings.fovCircle; fovCircle.Position = Vector2.new(
+        Camera.ViewportSize.X /
+        2, Camera.ViewportSize.Y / 2)
     _G.AimESP_FOV_CIRCLE = fovCircle
 
     pcall(function()
@@ -503,7 +519,7 @@ if KeySystem.KeyVerified then
     local function hasLineOfSight(model)
         local myChar = LocalPlayer.Character; if not (myChar and model) then return false end
         local theirTargetPart = model:FindFirstChild(settings.aimPart) or model:FindFirstChild("Head") or
-        model:FindFirstChild("HumanoidRootPart")
+            model:FindFirstChild("HumanoidRootPart")
         if not theirTargetPart then return false end
         local origin = Camera.CFrame.Position; local direction = theirTargetPart.Position - origin
         local params = RaycastParams.new(); params.FilterType = Enum.RaycastFilterType.Exclude
@@ -543,7 +559,7 @@ if KeySystem.KeyVerified then
                 local targetHrp = targetChar:FindFirstChild("HumanoidRootPart")
                 if targetHrp then
                     myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 2) -- Teleport behind them
-                    task.wait()                                       -- Allow physics to update
+                    task.wait()                                           -- Allow physics to update
 
                     if settings.killAllClick then
                         -- Simulate a mouse click to fire your weapon
@@ -659,7 +675,10 @@ if KeySystem.KeyVerified then
     end
     local function removeCache(model)
         local c = MainESP.cache[model]; if not c then return end
-        pcall(function() c.box:Remove() end); pcall(function() c.healthBar:Remove() end); pcall(function() c.healthBarBg:Remove() end); pcall(function() c.infoText:Remove() end); pcall(function() c.tracer:Remove() end)
+        pcall(function() c.box:Remove() end); pcall(function() c.healthBar:Remove() end); pcall(function()
+            c.healthBarBg
+                :Remove()
+        end); pcall(function() c.infoText:Remove() end); pcall(function() c.tracer:Remove() end)
         for _, ln in ipairs(c.lines) do pcall(function() ln:Remove() end) end
         MainESP.cache[model] = nil
     end
@@ -713,7 +732,10 @@ if KeySystem.KeyVerified then
         local cache = getCache(model)
         local isVisible = hasLineOfSight(model)
         local espColor = isVisible and settings.espVisibleColor or settings.espOccludedColor
-        cache.box.Color = espColor; cache.infoText.Color = espColor; for _, ln in ipairs(cache.lines) do ln.Color = espColor end
+        cache.box.Color = espColor; cache.infoText.Color = espColor; for _, ln in ipairs(cache.lines) do
+            ln.Color =
+                espColor
+        end
 
         local points = {
             model:FindFirstChild("Head"), model:FindFirstChild("HumanoidRootPart"),
@@ -738,17 +760,22 @@ if KeySystem.KeyVerified then
                 cache.box.Visible = true
                 cache.box.Position = Vector2.new(minX, minY)
                 cache.box.Size = Vector2.new(math.max(2, maxX - minX), math.max(2, maxY - minY))
-            else cache.box.Visible = false end
+            else
+                cache.box.Visible = false
+            end
 
             if settings.healthBar then
                 local boxHeight = math.max(2, maxY - minY)
                 local healthPercent = hum.Health / hum.MaxHealth
                 cache.healthBarBg.Visible = true; cache.healthBar.Visible = true
-                cache.healthBarBg.Position = Vector2.new(minX - 6, minY); cache.healthBarBg.Size = Vector2.new(4, boxHeight)
+                cache.healthBarBg.Position = Vector2.new(minX - 6, minY); cache.healthBarBg.Size = Vector2.new(4,
+                    boxHeight)
                 cache.healthBar.Position = Vector2.new(minX - 6, minY + (boxHeight * (1 - healthPercent)))
                 cache.healthBar.Size = Vector2.new(4, boxHeight * healthPercent)
                 cache.healthBar.Color = Color3.fromHSV(0.33 * healthPercent, 1, 1)
-            else cache.healthBarBg.Visible = false; cache.healthBar.Visible = false end
+            else
+                cache.healthBarBg.Visible = false; cache.healthBar.Visible = false
+            end
 
             if settings.infoESP then
                 local player = Players:GetPlayerFromCharacter(model)
@@ -757,7 +784,9 @@ if KeySystem.KeyVerified then
                 cache.infoText.Visible = true
                 cache.infoText.Text = string.format("%s [%.0fm]", name, dist)
                 cache.infoText.Position = Vector2.new(minX + (maxX - minX) / 2, minY - 15)
-            else cache.infoText.Visible = false end
+            else
+                cache.infoText.Visible = false
+            end
             if settings.espTracers and cache.tracer then
                 local tracerTarget = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Head")
                 if tracerTarget then
@@ -925,7 +954,12 @@ if KeySystem.KeyVerified then
         end
         if input.UserInputType == settings.keybinds.aimbotKey or input.KeyCode == settings.keybinds.aimbotKey then isAimbotKeyPressed = true end
         if input.KeyCode == settings.keybinds.toggleFly then setFlyEnabled(not settings.flyEnabled) end
-        if input.KeyCode == settings.keybinds.toggleGUI then if mainGuiFrame then mainGuiFrame.Visible = not mainGuiFrame.Visible end end
+        if input.KeyCode == settings.keybinds.toggleGUI then
+            if mainGuiFrame then
+                mainGuiFrame.Visible = not mainGuiFrame
+                    .Visible
+            end
+        end
         if input.KeyCode == settings.keybinds.loopKillKey then toggleLoopKill() end
         if input.KeyCode == settings.keybinds.killAllKey then killAllTask() end
     end)
@@ -1016,10 +1050,15 @@ if KeySystem.KeyVerified then
     end
 
     -- // --- MAIN UI SETUP ---
-    local sg = Instance.new("ScreenGui"); sg.Name = "AimESP_UI"; sg.ResetOnSpawn = false; sg.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    local sg = Instance.new("ScreenGui"); sg.Name = "AimESP_UI"; sg.ResetOnSpawn = false; sg.ZIndexBehavior = Enum
+        .ZIndexBehavior.Global
     local function safeParentGui(gui)
-        local ok, cg = pcall(function() return game:GetService("CoreGui") end); if ok and cg then gui.Parent = cg else gui.Parent =
-            Players.LocalPlayer:WaitForChild("PlayerGui") end
+        local ok, cg = pcall(function() return game:GetService("CoreGui") end); if ok and cg then
+            gui.Parent = cg
+        else
+            gui.Parent =
+                Players.LocalPlayer:WaitForChild("PlayerGui")
+        end
     end
     safeParentGui(sg)
 
@@ -1044,27 +1083,38 @@ if KeySystem.KeyVerified then
     tooltipPadding.PaddingRight = UDim.new(0, 5)
     local tooltipConnection -- For the mouse-follow connection
 
-    local Main = Instance.new("Frame"); Main.Name = "Main"; Main.Size = UDim2.new(0, 680, 0, 460); Main.Position = UDim2.new(0.5, -340, 0.5, -230)
+    local Main = Instance.new("Frame"); Main.Name = "Main"; Main.Size = UDim2.new(0, 680, 0, 460); Main.Position = UDim2
+        .new(0.5, -340, 0.5, -230)
     Main.BackgroundColor3 = THEME.Background; Main.BorderSizePixel = 0; Main.ClipsDescendants = true; Main.Parent = sg
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10); local mainStroke = Instance.new("UIStroke", Main); mainStroke.Color = THEME.Muted; mainStroke.Thickness = 1
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10); local mainStroke = Instance.new("UIStroke", Main); mainStroke.Color =
+        THEME.Muted; mainStroke.Thickness = 1
     local mainGuiFrame = Main
 
     -- // --- WINDOW MANAGEMENT ---
-    local TitleBar = Instance.new("Frame", Main); TitleBar.Name = "TitleBar"; TitleBar.Size = UDim2.new(1, 0, 0, 42); TitleBar.BackgroundColor3 = THEME.Surface
-    local Title = Instance.new("TextLabel", TitleBar); Title.Size = UDim2.new(0, 260, 1, 0); Title.Position = UDim2.new(0, 16, 0, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
-    Title.Text = "AldoAimV4"; Title.TextColor3 = THEME.Text; Title.TextSize = 17; Title.TextXAlignment = Enum.TextXAlignment.Left
+    local TitleBar = Instance.new("Frame", Main); TitleBar.Name = "TitleBar"; TitleBar.Size = UDim2.new(1, 0, 0, 42); TitleBar.BackgroundColor3 =
+        THEME.Surface
+    local Title = Instance.new("TextLabel", TitleBar); Title.Size = UDim2.new(0, 260, 1, 0); Title.Position = UDim2.new(
+        0, 16, 0, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
+    Title.Text = "AldoAimV4"; Title.TextColor3 = THEME.Text; Title.TextSize = 17; Title.TextXAlignment = Enum
+        .TextXAlignment.Left
 
     local dragging, dragStart, startPos
-    TitleBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging, dragStart, startPos =
-            true, input.Position, Main.Position end end)
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging, dragStart, startPos =
+                true, input.Position, Main.Position
+        end
+    end)
     TitleBar.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-    UIS.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    UIS.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local d = input.Position - dragStart; Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X,
                 startPos.Y.Scale, startPos.Y.Offset + d.Y)
-        end end)
+        end
+    end)
 
     local btnClose = Instance.new("TextButton", TitleBar); btnClose.Size = UDim2.new(0, 30, 0, 24); btnClose.Position =
-    UDim2.new(1, -35, 0.5, -12); btnClose.BackgroundTransparency = 1
+        UDim2.new(1, -35, 0.5, -12); btnClose.BackgroundTransparency = 1
     btnClose.Font = Enum.Font.GothamBold; btnClose.Text = "X"; btnClose.TextColor3 = THEME.TextMuted; btnClose.TextSize = 18
     btnClose.MouseEnter:Connect(function() tween(btnClose, { TextColor3 = Color3.fromRGB(255, 80, 80) }, 0.1) end)
     btnClose.MouseLeave:Connect(function() tween(btnClose, { TextColor3 = THEME.TextMuted }, 0.1) end)
@@ -1075,12 +1125,14 @@ if KeySystem.KeyVerified then
     end)
 
     -- // --- LAYOUT & TABS ---
-    local Sidebar = Instance.new("Frame", Main); Sidebar.Name = "Sidebar"; Sidebar.Size = UDim2.new(0, 150, 1, -42); Sidebar.Position = UDim2.new(0, 0, 0, 42)
+    local Sidebar = Instance.new("Frame", Main); Sidebar.Name = "Sidebar"; Sidebar.Size = UDim2.new(0, 150, 1, -42); Sidebar.Position =
+        UDim2.new(0, 0, 0, 42)
     Sidebar.BackgroundColor3 = THEME.Surface; Sidebar.BorderSizePixel = 0
     Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 10)
     Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 4)
 
-    local PagesContainer = Instance.new("Frame", Main); PagesContainer.Name = "PagesContainer"; PagesContainer.Size = UDim2.new(1, -150, 1, -42); PagesContainer.Position = UDim2.new(0, 150, 0, 42)
+    local PagesContainer = Instance.new("Frame", Main); PagesContainer.Name = "PagesContainer"; PagesContainer.Size =
+        UDim2.new(1, -150, 1, -42); PagesContainer.Position = UDim2.new(0, 150, 0, 42)
     PagesContainer.BackgroundTransparency = 1
     do
         local padding = Instance.new("UIPadding", PagesContainer)
@@ -1094,7 +1146,7 @@ if KeySystem.KeyVerified then
     local function createPage(name)
         local page = Instance.new("ScrollingFrame", PagesContainer); page.Name = name; page.Size = UDim2.fromScale(1, 1); page.BackgroundTransparency = 1
         page.BorderSizePixel = 0; page.ScrollBarImageColor3 = THEME.Muted; page.ScrollBarThickness = 4; page.CanvasSize =
-        UDim2.new()
+            UDim2.new()
         page.AutomaticCanvasSize = Enum.AutomaticSize.Y; page.Visible = false; pages[name] = page
         local layout = Instance.new("UIListLayout", page); layout.Padding = UDim.new(0, 12); return page
     end
@@ -1112,9 +1164,11 @@ if KeySystem.KeyVerified then
     local function createTab(name, order)
         local tabBtn = Instance.new("TextButton", Sidebar); tabBtn.Name = name; tabBtn.Size = UDim2.new(1, -12, 0, 42)
         tabBtn.Position = UDim2.new(0, 6, 0, 0)
-        tabBtn.BackgroundColor3 = THEME.Surface; tabBtn.Font = FONT; tabBtn.Text = "  " .. name; tabBtn.TextColor3 = THEME.Text
+        tabBtn.BackgroundColor3 = THEME.Surface; tabBtn.Font = FONT; tabBtn.Text = "  " .. name; tabBtn.TextColor3 =
+            THEME.Text
         tabBtn.TextSize = 14; tabBtn.TextXAlignment = Enum.TextXAlignment.Left; tabBtn.LayoutOrder = order
-        local indicator = Instance.new("Frame", tabBtn); indicator.Name = "Indicator"; indicator.Size = UDim2.new(0, 0, 1, 0)
+        local indicator = Instance.new("Frame", tabBtn); indicator.Name = "Indicator"; indicator.Size = UDim2.new(0, 0, 1,
+            0)
         indicator.BackgroundColor3 = THEME.Accent; indicator.BorderSizePixel = 0
         local page = createPage(name)
         local tabRecord = { Button = tabBtn, Indicator = indicator, Page = page }
@@ -1132,7 +1186,7 @@ if KeySystem.KeyVerified then
     end
 
     local pageAim = createTab("Aimbot", 1); local pageESP = createTab("ESP", 2); local pageGunMods = createTab(
-    "Gun Mods", 3); local pageMisc = createTab("Misc", 4); local pageSettings = createTab("Settings", 5)
+        "Gun Mods", 3); local pageMisc = createTab("Misc", 4); local pageSettings = createTab("Settings", 5)
     setActiveTab(tabButtons[1])
 
     -- // --- MODERN COMPONENT FACTORY ---
@@ -1170,11 +1224,14 @@ if KeySystem.KeyVerified then
     end
     local function createToggle(parent, text, getVal, setVal)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 28); f.BackgroundTransparency = 1
-        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -72, 1, 0); l.BackgroundTransparency = 1; l.Font = FONT
+        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -72, 1, 0); l.BackgroundTransparency = 1; l.Font =
+            FONT
         l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
-        local t = Instance.new("TextButton", f); t.Size = UDim2.new(0, 48, 0, 22); t.Position = UDim2.new(1, -48, 0.5, -11)
+        local t = Instance.new("TextButton", f); t.Size = UDim2.new(0, 48, 0, 22); t.Position = UDim2.new(1, -48, 0.5,
+            -11)
         t.BackgroundColor3 = THEME.Muted; t.Text = ""; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
-        local n = Instance.new("Frame", t); n.Size = UDim2.new(0, 18, 0, 18); n.Position = UDim2.new(0, 2, 0.5, -9); n.BackgroundColor3 = THEME.TextMuted; Instance.new("UICorner", n).CornerRadius = UDim.new(1, 0)
+        local n = Instance.new("Frame", t); n.Size = UDim2.new(0, 18, 0, 18); n.Position = UDim2.new(0, 2, 0.5, -9); n.BackgroundColor3 =
+            THEME.TextMuted; Instance.new("UICorner", n).CornerRadius = UDim.new(1, 0)
         local function u(i)
             local v = getVal(); local d = i and 0 or 0.12
             if v then
@@ -1192,22 +1249,32 @@ if KeySystem.KeyVerified then
     end
     local function createSlider(parent, text, min, max, step, getVal, setVal)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 44); f.BackgroundTransparency = 1
-        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -64, 0, 20); l.BackgroundTransparency = 1; l.Font = FONT
+        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(1, -64, 0, 20); l.BackgroundTransparency = 1; l.Font =
+            FONT
         l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left
-        local vL = Instance.new("TextLabel", f); vL.Size = UDim2.new(0, 56, 0, 20); vL.Position = UDim2.new(1, -56, 0, 0); vL.BackgroundTransparency = 1; vL.Font = Enum.Font.GothamBold
+        local vL = Instance.new("TextLabel", f); vL.Size = UDim2.new(0, 56, 0, 20); vL.Position = UDim2.new(1, -56, 0, 0); vL.BackgroundTransparency = 1; vL.Font =
+            Enum.Font.GothamBold
         vL.TextColor3 = THEME.Accent; vL.TextSize = 14; vL.TextXAlignment = Enum.TextXAlignment.Right
-        local t = Instance.new("Frame", f); t.Size = UDim2.new(1, 0, 0, 7); t.Position = UDim2.new(0, 0, 0, 26); t.BackgroundColor3 = THEME.Muted; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
-        local fl = Instance.new("Frame", t); fl.BackgroundColor3 = THEME.Accent; Instance.new("UICorner", fl).CornerRadius = UDim.new(1, 0)
+        local t = Instance.new("Frame", f); t.Size = UDim2.new(1, 0, 0, 7); t.Position = UDim2.new(0, 0, 0, 26); t.BackgroundColor3 =
+            THEME.Muted; Instance.new("UICorner", t).CornerRadius = UDim.new(1, 0)
+        local fl = Instance.new("Frame", t); fl.BackgroundColor3 = THEME.Accent; Instance.new("UICorner", fl).CornerRadius =
+            UDim.new(1, 0)
         local iB = Instance.new("TextButton", t); iB.Size = UDim2.fromScale(1, 1); iB.BackgroundTransparency = 1; iB.ZIndex = 2
         local function u()
-            local v = getVal(); local p = step < 1 and "%.2f" or "%.0f"; vL.Text = string.format(p, v); local c = (v - min) / (max - min); fl.Size = UDim2.new(c, 0, 1, 0)
+            local v = getVal(); local p = step < 1 and "%.2f" or "%.0f"; vL.Text = string.format(p, v); local c = (v - min) /
+                (max - min); fl.Size = UDim2.new(c, 0, 1, 0)
         end
         local d = false
         local function o(i)
-            local p = math.clamp((i.Position.X - t.AbsolutePosition.X) / t.AbsoluteSize.X, 0, 1); local v = min + (max - min) * p
+            local p = math.clamp((i.Position.X - t.AbsolutePosition.X) / t.AbsoluteSize.X, 0, 1); local v = min +
+                (max - min) * p
             local s = math.floor(v / step + 0.5) * step; setVal(s); u()
         end
-        iB.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then d = true; o(i); playSound("click") end end)
+        iB.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                d = true; o(i); playSound("click")
+            end
+        end)
         UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then d = false end end)
         iB.InputChanged:Connect(function(i) if d and i.UserInputType == Enum.UserInputType.MouseMovement then o(i) end end)
         iB.MouseEnter:Connect(function() playSound("hover") end); u()
@@ -1215,16 +1282,25 @@ if KeySystem.KeyVerified then
     end
     local function createChoice(parent, text, options, getVal, setVal, tooltipText)
         local f = Instance.new("Frame", parent); f.Size = UDim2.new(1, 0, 0, 36); f.BackgroundTransparency = 1
-        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(0.5, -6, 1, 0); l.BackgroundTransparency = 1; l.Font = FONT
-        l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left; l.TextTruncate = Enum.TextTruncate.None
-        local cB = Instance.new("TextButton", f); cB.Size = UDim2.new(0.5, -6, 1, 0); cB.Position = UDim2.fromScale(0.5, 0)
-        cB.BackgroundColor3 = THEME.Muted; cB.Font = FONT; cB.Text = ""; cB.TextColor3 = THEME.Text; cB.TextSize = 14; Instance.new("UICorner", cB).CornerRadius = UDim.new(0, 6)
-        local lB = Instance.new("TextButton", cB); lB.Size = UDim2.new(0, 22, 1, 0); lB.BackgroundTransparency = 1; lB.Font = FONT; lB.Text = "<"; lB.TextColor3 = THEME.TextMuted; lB.TextSize = 14
+        local l = Instance.new("TextLabel", f); l.Size = UDim2.new(0.5, -6, 1, 0); l.BackgroundTransparency = 1; l.Font =
+            FONT
+        l.Text = text; l.TextColor3 = THEME.Text; l.TextSize = 14; l.TextXAlignment = Enum.TextXAlignment.Left; l.TextTruncate =
+            Enum.TextTruncate.None
+        local cB = Instance.new("TextButton", f); cB.Size = UDim2.new(0.5, -6, 1, 0); cB.Position = UDim2.fromScale(0.5,
+            0)
+        cB.BackgroundColor3 = THEME.Muted; cB.Font = FONT; cB.Text = ""; cB.TextColor3 = THEME.Text; cB.TextSize = 14; Instance.new("UICorner", cB).CornerRadius =
+            UDim.new(0, 6)
+        local lB = Instance.new("TextButton", cB); lB.Size = UDim2.new(0, 22, 1, 0); lB.BackgroundTransparency = 1; lB.Font =
+            FONT; lB.Text = "<"; lB.TextColor3 = THEME.TextMuted; lB.TextSize = 14
         local rB = lB:Clone(); rB.Parent = cB; rB.Position = UDim2.new(1, -22, 0, 0); rB.Text = ">";
-        local tL = Instance.new("TextLabel", cB); tL.Size = UDim2.new(1, -60, 1, 0); tL.Position = UDim2.new(0, 30, 0, 0); tL.BackgroundTransparency = 1; tL.Font = FONT; tL.TextColor3 = THEME.Text; tL.TextSize = 14; tL.TextWrapped = false; tL.TextTruncate = Enum.TextTruncate.AtEnd; tL.TextXAlignment = Enum.TextXAlignment.Center
+        local tL = Instance.new("TextLabel", cB); tL.Size = UDim2.new(1, -60, 1, 0); tL.Position = UDim2.new(0, 30, 0, 0); tL.BackgroundTransparency = 1; tL.Font =
+            FONT; tL.TextColor3 = THEME.Text; tL.TextSize = 14; tL.TextWrapped = false; tL.TextTruncate = Enum
+            .TextTruncate
+            .AtEnd; tL.TextXAlignment = Enum.TextXAlignment.Center
         local function u() tL.Text = getVal() end
         local function c(dir)
-            local cur = getVal(); local i = table.find(options, cur) or 1; local nI = (i + dir - 1) % #options + 1; setVal(options[nI]); u(); playSound("click")
+            local cur = getVal(); local i = table.find(options, cur) or 1; local nI = (i + dir - 1) % #options + 1; setVal(
+                options[nI]); u(); playSound("click")
         end
         lB.MouseButton1Click:Connect(function() c(-1) end); rB.MouseButton1Click:Connect(function() c(1) end); u()
         handleTooltip(f, tooltipText)
@@ -1251,7 +1327,11 @@ if KeySystem.KeyVerified then
             if k == "keybinds" then
                 payload.settings.keybinds = {}
                 for kb, val in pairs(v) do
-                    payload.settings.keybinds[kb] = { type = (val.EnumType and val.EnumType.Name) or "KeyCode", name = val.Name }
+                    payload.settings.keybinds[kb] = {
+                        type = (val.EnumType and val.EnumType.Name) or "KeyCode",
+                        name =
+                            val.Name
+                    }
                 end
             elseif typeof(v) == "Color3" then
                 payload.settings[k] = { r = v.R, g = v.G, b = v.B }
@@ -1358,7 +1438,8 @@ if KeySystem.KeyVerified then
         card.BackgroundColor3 = THEME.Surface
         card.BorderSizePixel = 0
         local pad = Instance.new("UIPadding", card)
-        pad.PaddingTop = UDim.new(0, 10); pad.PaddingBottom = UDim.new(0, 10); pad.PaddingLeft = UDim.new(0, 10); pad.PaddingRight = UDim.new(0, 10)
+        pad.PaddingTop = UDim.new(0, 10); pad.PaddingBottom = UDim.new(0, 10); pad.PaddingLeft = UDim.new(0, 10); pad.PaddingRight =
+            UDim.new(0, 10)
         Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
         Instance.new("UIStroke", card).Color = THEME.Muted
         local layout = Instance.new("UIListLayout", card)
@@ -1451,29 +1532,59 @@ if KeySystem.KeyVerified then
     presetCard.AutomaticSize = Enum.AutomaticSize.Y
     local presetLegit = createButton(presetCard, "Load Legit Config", 32)
     presetLegit.MouseButton1Click:Connect(function()
-        applyConfig({ settings = {
-            aimbotEnabled = true, fovCircle = false, aimRadius = 80, smoothness = 0.5,
-            espEnabled = true, boxESP = true, skelESP = false, healthBar = true, infoESP = true,
-            fullBright = false, noclipEnabled = false
-        } })
+        applyConfig({
+            settings = {
+                aimbotEnabled = true,
+                fovCircle = false,
+                aimRadius = 80,
+                smoothness = 0.5,
+                espEnabled = true,
+                boxESP = true,
+                skelESP = false,
+                healthBar = true,
+                infoESP = true,
+                fullBright = false,
+                noclipEnabled = false
+            }
+        })
         for kb, btn in pairs(keybindButtons) do btn.Text = settings.keybinds[kb].Name end
     end)
     local presetRage = createButton(presetCard, "Load Rage Config", 32)
     presetRage.MouseButton1Click:Connect(function()
-        applyConfig({ settings = {
-            aimbotEnabled = true, fovCircle = true, aimRadius = 300, smoothness = 1.0,
-            espEnabled = true, boxESP = true, skelESP = true, healthBar = true, infoESP = true,
-            fullBright = true, noclipEnabled = true
-        } })
+        applyConfig({
+            settings = {
+                aimbotEnabled = true,
+                fovCircle = true,
+                aimRadius = 300,
+                smoothness = 1.0,
+                espEnabled = true,
+                boxESP = true,
+                skelESP = true,
+                healthBar = true,
+                infoESP = true,
+                fullBright = true,
+                noclipEnabled = true
+            }
+        })
         for kb, btn in pairs(keybindButtons) do btn.Text = settings.keybinds[kb].Name end
     end)
     local presetAuto = createButton(presetCard, "Load AutoAim Config (vicinity)", 32)
     presetAuto.MouseButton1Click:Connect(function()
         applyConfig({
             settings = {
-                aimbotEnabled = true, fovCircle = true, aimRadius = 300, smoothness = 0,
-                espEnabled = true, boxESP = true, skelESP = false, healthBar = false, infoESP = true,
-                hitboxExpanderEnabled = true, hitboxSize = 24, hitboxTransparency = 1, fullBright = true
+                aimbotEnabled = true,
+                fovCircle = true,
+                aimRadius = 300,
+                smoothness = 0,
+                espEnabled = true,
+                boxESP = true,
+                skelESP = false,
+                healthBar = false,
+                infoESP = true,
+                hitboxExpanderEnabled = true,
+                hitboxSize = 24,
+                hitboxTransparency = 1,
+                fullBright = true
             },
             gun = {
                 infiniteAmmo = true, fastFire = true, fireRate = 0.01, noRecoil = true, allAuto = true, noSpread = true
