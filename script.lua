@@ -128,7 +128,10 @@ function KeySystem:CreateUI()
 
         -- 2. Construct the URL
         local url = "https://georgiivolo1.pythonanywhere.com/api/check-key/?key=" .. enteredKey .. "&username=" .. cleanUsername
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         -- 3. Define the Request Function (Handles Ngrok Headers)
         local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
         local isValid = false
@@ -145,6 +148,7 @@ function KeySystem:CreateUI()
                     }
                 })
             end)
+<<<<<<< Updated upstream
 
             if ok and response and response.Body then
                 local decodeOk, decoded = pcall(function()
@@ -153,6 +157,17 @@ function KeySystem:CreateUI()
                 if decodeOk and decoded then
                     if tostring(decoded.valid) == "true" or tostring(decoded.success) == "true" then
                         isValid = true
+=======
+            if ok and response then
+                local body = response.Body or response.body or response.ResponseBody
+                local statusCode = response.StatusCode or response.Status or response.StatusMessage
+                if body then
+                    local decodeOk, decoded = pcall(HttpService.JSONDecode, HttpService, body)
+                    if decodeOk and type(decoded) == "table" then
+                        if decoded.valid == true or decoded.valid == "true" then
+                            isValid = true
+                        end
+>>>>>>> Stashed changes
                     end
                 end
             end
@@ -190,7 +205,7 @@ function handleResponse(body)
     -- This is just here to make the fallback code work if request() doesn't exist
     local HttpService = game:GetService("HttpService")
     local decodeOk, decoded = pcall(function() return HttpService:JSONDecode(body) end)
-    if decodeOk and decoded and decoded.valid == true then
+    if decodeOk and type(decoded) == "table" and (decoded.valid == true or decoded.valid == "true") then
         StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80); StatusLabel.Text = "Success!"; task.wait(1); KeySystem.KeyVerified = true; KeyAuthScreenGui:Destroy()
     else
         StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80); StatusLabel.Text = "Invalid Key"; task.wait(2); StatusLabel.Text = ""
